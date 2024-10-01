@@ -4,28 +4,20 @@ const app = require('../service');
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 const emptyUser = {};
 const initUser = { name : '常用名字', email: 'a@jwt.com', password: 'admin'}
-let adminUser;
 let adminUserAuthtoken;
 let testUserAuthToken;
 
-const { Role, DB } = require('../database/database.js');
+const { DB } = require('../database/database.js');
 
 async function createAdminUser() {
-    let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
-    user.name = Math.random().toString(36).substring(2, 12);
-    user.email = user.name + '@admin.com';
-
-    await DB.addUser(user);
-
-    user.password = 'toomanysecrets';
-    return user;
+    await DB.addUser(initUser);
 }
 
 beforeAll(async () => {
+    createAdminUser()
     testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
     const registerRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerRes.body.token;
-    //adminUser = createAdminUser();
     const loginRes = await request(app).put('/api/auth').send(initUser);
     adminUserAuthtoken = loginRes.body.token
 });
