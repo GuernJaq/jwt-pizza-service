@@ -1,14 +1,14 @@
 const request = require('supertest');
 const app = require('../service');
 
-const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
+//const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 const testFranchise = { name: "pizzaPocket", admins: [] }
 const testStore = {franchiseId: 1, name:"SLC"}
 
 //const initUser = { name : '常用名字', email: 'a@jwt.com', password: 'admin'}
 let adminUser;
 let adminUserAuthtoken;
-let testUserAuthToken;
+//let testUserAuthToken;
 
 const { Role, DB } = require('../database/database.js');
 
@@ -26,9 +26,10 @@ async function createAdminUser() {
 beforeAll(async () => {
     adminUser = await createAdminUser()
 
-    testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+    //USE FOR FAILURE TESTS (if I decide to do that)
+    /*testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
     const registerRes = await request(app).post('/api/auth').send(testUser);
-    testUserAuthToken = registerRes.body.token;
+    testUserAuthToken = registerRes.body.token;*/
 
     const loginRes = await request(app).put('/api/auth').send(adminUser);
     adminUserAuthtoken = loginRes.body.token
