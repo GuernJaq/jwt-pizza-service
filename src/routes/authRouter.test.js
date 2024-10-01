@@ -7,14 +7,7 @@ const initUser = { name : '常用名字', email: 'a@jwt.com', password: 'admin'}
 let adminUserAuthtoken;
 let testUserAuthToken;
 
-const { DB } = require('../database/database.js');
-
-async function createAdminUser() {
-    await DB.addUser(initUser);
-}
-
 beforeAll(async () => {
-    //createAdminUser()
     testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
     const registerRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerRes.body.token;
