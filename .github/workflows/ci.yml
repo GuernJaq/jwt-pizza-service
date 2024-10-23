@@ -152,7 +152,7 @@ jobs:
       - name: Deploy new task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs.task-de9finition }}
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: jwt-pizza-service
           cluster: jwt-pizza-service
           wait-for-service-stability: false
