@@ -7,7 +7,7 @@ class MetricBuilder {
     }
 
     append(metricPrefix, metricName, metricValue) {
-        const newMetric = `${metricPrefix},source=${config.metrics.source}${metricName}=${metricValue}`;
+        const newMetric = `${metricPrefix},source=${config.metrics.source} ${metricName}=${metricValue}`;
         this.strings.push(newMetric);
         return this;
     }
