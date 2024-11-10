@@ -33,6 +33,17 @@ class Metrics {
         this.activeUsers = new Map();
     }
 
+    toString(delim = '\n') { //tostring func to get test coverage
+        const buf = new MetricBuilder();
+        this.systemMetrics(buf); //mem and cpu
+        this.authMetrics(buf); //success and failures
+        this.purchaseMetrics(buf); //count, revenue, latency, error
+        this.httpMetrics(buf); //request types
+        this.userMetrics(buf); //active users
+
+        return buf.toString(delim);
+    }
+
     sendMetricToGrafana(metrics) {
         fetch(`${config.metrics.url}`, {
             method: 'post',
@@ -98,7 +109,7 @@ class Metrics {
         this.purchaseCount += newOrder.count;
         this.purchaseRevenue += newOrder.revenue;
         if (newOrder.error) {
-            this.purchaseError += 0;
+            this.purchaseError += 1;
         }
         if (newOrder.start && newOrder.end) {
             const latency = newOrder.end - newOrder.start;
@@ -106,10 +117,10 @@ class Metrics {
         }
     }
 
-    userMetrics(buf){
+    userMetrics(buf) {
         this.activeUsers.forEach((value, key) => {
             const expires = Date.now() - 10 * 60 * 1000;
-            if (value.last < expires){
+            if (value.last < expires) {
                 this.activeUsers.delete(key);
             }
         });
