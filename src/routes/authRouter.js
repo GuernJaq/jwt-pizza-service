@@ -76,9 +76,9 @@ authRouter.post(
       const user = await DB.addUser({ name, email, password, roles: [{ role: Role.Diner }] });
       const auth = await setAuth(user);
       res.json({ user: user, token: auth });
-      metrics.loginMetric(true);
+      metrics.loginMetric(email, true);
     } catch (error) {
-      metrics.loginMetric(false);
+      metrics.loginMetric(email, false);
       throw error;
     }
   })
@@ -93,9 +93,9 @@ authRouter.put(
       const user = await DB.getUser(email, password);
       const auth = await setAuth(user);
       res.json({ user: user, token: auth });
-      metrics.loginMetric(true);
+      metrics.loginMetric(email, true);
     } catch (error){
-      metrics.loginMetric(false);
+      metrics.loginMetric(email, false);
       throw error;
     }
   })

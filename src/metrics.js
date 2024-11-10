@@ -1,5 +1,5 @@
 const os = require('os');
-const config = require('./config.js')
+const config = require('./config.js');
 
 class MetricBuilder {
     constructor() {
@@ -29,6 +29,8 @@ class Metrics {
 
         this.authSuccess = 0;
         this.authFail = 0;
+
+        this.activeUsers = new Map();
     }
 
     sendMetricToGrafana(metrics) {
@@ -49,7 +51,7 @@ class Metrics {
                 this.authMetrics(buf); //success and failures
                 this.purchaseMetrics(buf); //count, revenue, latency, error
                 this.httpMetrics(buf); //request types
-                //this.userMetrics(buf); //active users
+                this.userMetrics(buf); //active users
 
                 const metrics = buf.toString('\n');
                 this.sendMetricToGrafana(metrics);
@@ -60,9 +62,10 @@ class Metrics {
         timer.unref();
     }
 
-    loginMetric = (isSuccess) => {
+    loginMetric = (email, isSuccess) => {
         if (isSuccess) {
             this.authSuccess += 1;
+            this.activeUsers.set(email, { login: Date.now(), last: Date.now() });
         } else {
             this.authFail += 1;
         }
@@ -74,6 +77,13 @@ class Metrics {
         this.requests[method] = currAmount + 1;
 
         const start = Date.now();
+
+        if (req.user) {
+            if (this.activeUsers.has(req.user.id)) {
+                this.activeUsers.get(req.user.id).last = start;
+            }
+        }
+
         let send = res.send;
         res.send = (resBody) => {
             this.requestLatency += Date.now() - start;
@@ -94,6 +104,16 @@ class Metrics {
             const latency = newOrder.end - newOrder.start;
             this.purchaseLatency += latency;
         }
+    }
+
+    userMetrics(buf){
+        this.activeUsers.forEach((value, key) => {
+            const expires = Date.now() - 10 * 60 * 1000;
+            if (value.last < expires){
+                this.activeUsers.delete(key);
+            }
+        });
+        buf.append('pizza_user_count', 'total', this.activeUsers.size);
     }
 
     authMetrics(buf) {
