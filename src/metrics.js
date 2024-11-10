@@ -23,8 +23,12 @@ class Metrics {
         this.purchaseRevenue = 0;
         this.purchaseError = 0;
         this.purchaseLatency = 0;
+
         this.requests = {};
         this.requestLatency = 0;
+
+        this.authSuccess = 0;
+        this.authFail = 0;
     }
 
     sendMetricToGrafana(metrics) {
@@ -42,7 +46,7 @@ class Metrics {
             try {
                 const buf = new MetricBuilder();
                 this.systemMetrics(buf); //mem and cpu
-                //this.authMetrics(buf); //success and failures
+                this.authMetrics(buf); //success and failures
                 this.purchaseMetrics(buf); //count, revenue, latency, error
                 this.httpMetrics(buf); //request types
                 //this.userMetrics(buf); //active users
@@ -54,6 +58,14 @@ class Metrics {
             }
         }, period);
         timer.unref();
+    }
+
+    loginMetric = (isSuccess) => {
+        if (isSuccess) {
+            this.authSuccess += 1;
+        } else {
+            this.authFail += 1;
+        }
     }
 
     requestTracker = (req, res, next) => {
@@ -75,16 +87,21 @@ class Metrics {
     orderMetric = (newOrder) => {
         this.purchaseCount += newOrder.count;
         this.purchaseRevenue += newOrder.revenue;
-        if(newOrder.error){
+        if (newOrder.error) {
             this.purchaseError += 0;
         }
-        if (newOrder.start && newOrder.end){
+        if (newOrder.start && newOrder.end) {
             const latency = newOrder.end - newOrder.start;
             this.purchaseLatency += latency;
         }
     }
 
-    httpMetrics(buf){
+    authMetrics(buf) {
+        buf.append('pizza_auth_success', 'total', this.authSuccess);
+        buf.append('pizza_auth_fail', 'total', this.authFail);
+    }
+
+    httpMetrics(buf) {
         buf.append('pizza_http_latency', 'total', this.requestLatency);
         const totalRequests = Object.values(this.requests).reduce((acc, curr) => acc + curr, 0);
         buf.append('pizza_http_request', 'all', totalRequests);
@@ -93,7 +110,7 @@ class Metrics {
         });
     }
 
-    purchaseMetrics(buf){
+    purchaseMetrics(buf) {
         buf.append('pizza_purchase_count', 'total', this.purchaseCount);
         buf.append('pizza_purchase_revenue', 'total', this.purchaseRevenue);
         buf.append('pizza_purchase_latency', 'total', this.purchaseLatency);
