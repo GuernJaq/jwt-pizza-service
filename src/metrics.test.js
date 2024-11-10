@@ -1,5 +1,3 @@
-const request = require('supertest');
-const app = require('./service.js');
 const metrics = require('./metrics.js');
 
 test('metrics', async () => {
