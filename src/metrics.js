@@ -23,6 +23,8 @@ class Metrics {
         this.purchaseRevenue = 0;
         this.purchaseError = 0;
         this.purchaseLatency = 0;
+        this.requests = {};
+        this.requestLatency = 0;
     }
 
     sendMetricToGrafana(metrics) {
@@ -42,7 +44,7 @@ class Metrics {
                 this.systemMetrics(buf); //mem and cpu
                 //this.authMetrics(buf); //success and failures
                 this.purchaseMetrics(buf); //count, revenue, latency, error
-                //this.httpMetrics(buf); //request types
+                this.httpMetrics(buf); //request types
                 //this.userMetrics(buf); //active users
 
                 const metrics = buf.toString('\n');
@@ -52,6 +54,22 @@ class Metrics {
             }
         }, period);
         timer.unref();
+    }
+
+    requestTracker = (req, res, next) => {
+        const method = req.method.toLowerCase();
+        const currAmount = this.requests[method] ?? 0;
+        this.requests[method] = currAmount + 1;
+
+        const start = Date.now();
+        let send = res.send;
+        res.send = (resBody) => {
+            this.requestLatency += Date.now() - start;
+            res.send = send;
+            return res.send(resBody);
+        };
+
+        next();
     }
 
     orderMetric = (newOrder) => {
@@ -64,6 +82,15 @@ class Metrics {
             const latency = newOrder.end - newOrder.start;
             this.purchaseLatency += latency;
         }
+    }
+
+    httpMetrics(buf){
+        buf.append('pizza_http_latency', 'total', this.requestLatency);
+        const totalRequests = Object.values(this.requests).reduce((acc, curr) => acc + curr, 0);
+        buf.append('pizza_http_request', 'all', totalRequests);
+        Object.keys(this.requests).forEach((method) => {
+            buf.append('pizza_http_request', `${method}`, this.requests[method]);
+        });
     }
 
     purchaseMetrics(buf){
