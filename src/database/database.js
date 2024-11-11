@@ -4,6 +4,8 @@ const config = require('../config.js');
 const { StatusCodeError } = require('../endpointHelper.js');
 const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
+const logger = require('../logger.js');
+
 class DB {
   constructor() {
     this.initialized = this.initializeDatabase();
@@ -78,18 +80,8 @@ class DB {
   async updateUser(userId, email, password) {
     const connection = await this.getConnection();
     try {
-      const params = [];
-      if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        params.push(`password='${hashedPassword}'`);
-      }
-      if (email) {
-        params.push(`email='${email}'`);
-      }
-      if (params.length > 0) {
-        const query = `UPDATE user SET ${params.join(', ')} WHERE id=${userId}`;
-        await this.query(connection, query);
-      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await this.query(connection, `UPDATE user SET email=?, password=? WHERE id=?`, [email, hashedPassword, userId], [false, true, false]);
       return this.getUser(email, password);
     } finally {
       connection.end();
@@ -100,7 +92,7 @@ class DB {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
     try {
-      await this.query(connection, `INSERT INTO auth (token, userId) VALUES (?, ?)`, [token, userId]);
+      await this.query(connection, `INSERT INTO auth (token, userId) VALUES (?, ?)`, [token, userId], [true, false]);
     } finally {
       connection.end();
     }
@@ -110,7 +102,7 @@ class DB {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
     try {
-      const authResult = await this.query(connection, `SELECT userId FROM auth WHERE token=?`, [token]);
+      const authResult = await this.query(connection, `SELECT userId FROM auth WHERE token=?`, [token], [true]);
       return authResult.length > 0;
     } finally {
       connection.end();
@@ -121,7 +113,7 @@ class DB {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
     try {
-      await this.query(connection, `DELETE FROM auth WHERE token=?`, [token]);
+      await this.query(connection, `DELETE FROM auth WHERE token=?`, [token], [true]);
     } finally {
       connection.end();
     }
@@ -284,9 +276,22 @@ class DB {
     return '';
   }
 
-  async query(connection, sql, params) {
+  async query(connection, sql, params, isSecure = []) {
     const [results] = await connection.execute(sql, params);
+    this.secureParams(sql, params, isSecure);
     return results;
+  }
+
+  secureParams(sql, params, isSecure) {
+    let i = 0;
+    const req = sql.replace(/\?/g, () => {
+      if (isSecure && isSecure[i]) {
+        i++;
+        return '******';
+      }
+      return params[i++];
+    });
+    logger.log('info', 'db', { req: req });
   }
 
   async getID(connection, key, value, table) {
