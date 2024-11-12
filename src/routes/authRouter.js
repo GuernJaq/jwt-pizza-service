@@ -4,6 +4,7 @@ const config = require('../config.js');
 const { asyncHandler } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
 const metrics = require('../metrics.js');
+const logging = require('../logger.js');
 
 const authRouter = express.Router();
 
@@ -79,7 +80,7 @@ authRouter.post(
       metrics.loginMetric(email, true);
     } catch (error) {
       metrics.loginMetric(email, false);
-      logger.log('error', 'register', {req: req, res: res, error: error});
+      logging.log('error', 'register', {req: req, res: res, error: error});
       throw error;
     }
   })
@@ -97,7 +98,7 @@ authRouter.put(
       metrics.loginMetric(email, true);
     } catch (error){
       metrics.loginMetric(email, false);
-      logger.log('error', 'login', {req: req, res: res, error: error});
+      logging.log('error', 'login', {req: req, res: res, error: error});
       throw error;
     }
   })

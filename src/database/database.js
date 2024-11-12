@@ -4,7 +4,7 @@ const config = require('../config.js');
 const { StatusCodeError } = require('../endpointHelper.js');
 const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
-const logger = require('../logger.js');
+const logging = require('../logger.js');
 
 class DB {
   constructor() {
@@ -291,7 +291,7 @@ class DB {
       }
       return params[i++];
     });
-    logger.log('info', 'db', { req: req });
+    logging.log('info', 'db', { req: req });
   }
 
   async getID(connection, key, value, table) {
