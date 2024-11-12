@@ -3,7 +3,8 @@ const config = require('../config.js');
 const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
-const metrics = require('../metrics.js')
+const metrics = require('../metrics.js');
+const logging = require('../logger.js');
 
 const orderRouter = express.Router();
 
@@ -83,6 +84,7 @@ orderRouter.post(
     const orderMetric = {count: order.items.length, 
                          revenue: order.items.reduce((acc, curr) => acc + curr.price, 0), 
                          start: Date.now()};
+    logger.log('info', 'factory', { req: req });
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
@@ -94,6 +96,7 @@ orderRouter.post(
     } else {
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
       orderMetric.error = true;
+      logger.log('error', 'factory', { req: req });
     }
 
     orderMetric.end = Date.now();
