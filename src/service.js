@@ -42,6 +42,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('*', (req, res) => {
+  const logError = { req: JSON.stringify(req.body), statusCode: 404, res: 'unknown endpoint', path: `${req.hostname}${req.originalUrl}` };
+  logging.log('error', 'service', logError);
   res.status(404).json({
     message: 'unknown endpoint',
   });
