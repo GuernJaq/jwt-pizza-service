@@ -80,7 +80,7 @@ authRouter.post(
       metrics.loginMetric(email, true);
     } catch (error) {
       metrics.loginMetric(email, false);
-      logging.log('error', 'register', {req: req, res: res});
+      logging.log('error', 'register', { req: req, res: res });
       throw error;
     }
   })
@@ -96,9 +96,10 @@ authRouter.put(
       const auth = await setAuth(user);
       res.json({ user: user, token: auth });
       metrics.loginMetric(email, true);
-    } catch (error){
+    } catch (error) {
       metrics.loginMetric(email, false);
-      logging.log('error', 'login', {req: req, res: res});
+      //const logError = { req: JSON.stringify(req.body), statusCode: res.statusCode, res: error.message };
+      //logging.log('error', 'login', logError);
       throw error;
     }
   })
