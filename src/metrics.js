@@ -51,6 +51,7 @@ class Metrics {
             headers: { Authorization: `Bearer ${config.metrics.userId}:${config.metrics.apiKey}` },
         }).catch((error) => {
             console.error('Error pushing metrics:', error);
+            logger.log('error', 'grafana', {error: error});
         });
     }
 
@@ -68,6 +69,7 @@ class Metrics {
                 this.sendMetricToGrafana(metrics);
             } catch (error) {
                 console.log('Error sending metrics', error);
+                logger.log('error', 'grafana', {error: error});
             }
         }, period);
         timer.unref();

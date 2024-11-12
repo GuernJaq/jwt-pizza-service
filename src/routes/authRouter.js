@@ -79,6 +79,7 @@ authRouter.post(
       metrics.loginMetric(email, true);
     } catch (error) {
       metrics.loginMetric(email, false);
+      logger.log('error', 'register', {req: req, res: res, error: error});
       throw error;
     }
   })
@@ -96,6 +97,7 @@ authRouter.put(
       metrics.loginMetric(email, true);
     } catch (error){
       metrics.loginMetric(email, false);
+      logger.log('error', 'login', {req: req, res: res, error: error});
       throw error;
     }
   })
