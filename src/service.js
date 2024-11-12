@@ -50,7 +50,8 @@ app.use('*', (req, res) => {
 // Default error handler for all exceptions and errors.
 app.use((err, req, res, next) => {
   res.status(err.statusCode ?? 500).json({ message: err.message, stack: err.stack });
-  //logging.log('error', 'service', {req: req, res: res});
+  const logError = { req: JSON.stringify(req.body), statusCode: res.statusCode, res: err.message };
+  logging.log('error', 'service', logError);
   next();
 });
 
