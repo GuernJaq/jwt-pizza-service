@@ -98,8 +98,8 @@ authRouter.put(
       metrics.loginMetric(email, true);
     } catch (error) {
       metrics.loginMetric(email, false);
-      //const logError = { req: JSON.stringify(req.body), statusCode: res.statusCode, res: error.message };
-      //logging.log('error', 'login', logError);
+      const logError = { req: JSON.stringify(req.body), statusCode: res.statusCode, res: error.message };
+      logging.log('error', 'login', logError);
       throw error;
     }
   })
