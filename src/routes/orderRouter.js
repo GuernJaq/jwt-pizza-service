@@ -84,7 +84,8 @@ orderRouter.post(
     const orderMetric = {count: order.items.length, 
                          revenue: order.items.reduce((acc, curr) => acc + curr.price, 0), 
                          start: Date.now()};
-    logging.log('info', 'factory', { req: req });
+    const logData = { req: JSON.stringify(req.body) };
+    logging.log('info', 'factory', logData);
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
@@ -96,7 +97,8 @@ orderRouter.post(
     } else {
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
       orderMetric.error = true;
-      logging.log('error', 'factory', { req: req });
+      const logError = { req: JSON.stringify(req.body), statusCode: res.statusCode, res: 'Failed to fulfill order at factory' };
+      logging.log('error', 'factory', logError);
     }
 
     orderMetric.end = Date.now();
