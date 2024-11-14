@@ -84,7 +84,7 @@ orderRouter.post(
     const orderMetric = {count: order.items.length, 
                          revenue: order.items.reduce((acc, curr) => acc + curr.price, 0), 
                          start: Date.now()};
-    const logData = { req: JSON.stringify(req.body) };
+    const logData = { req: JSON.stringify(req.body), path: `${config.factory.url}/api/order` };
     logging.log('info', 'factory', logData);
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
