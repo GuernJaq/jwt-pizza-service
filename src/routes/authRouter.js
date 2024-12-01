@@ -7,7 +7,7 @@ const metrics = require('../metrics.js');
 const logging = require('../logger.js');
 
 const authRouter = express.Router();
-var enableChaos = false;
+//var enableChaos = false;
 
 authRouter.endpoints = [
   {
@@ -40,14 +40,14 @@ authRouter.endpoints = [
     example: `curl -X DELETE localhost:3000/api/auth -H 'Authorization: Bearer tttttt'`,
     response: { message: 'logout successful' },
   },
-  {
-    method: 'PUT',
-    path: '/chaos/:state',
-    requiresAuth: true,
-    description: 'Enable chaos',
-    example: `curl -X PUT localhost:3000/chaos/true -H 'Authorization: Bearer tttttt'`,
-    response: { chaos: true },
-  },
+  // {
+  //   method: 'PUT',
+  //   path: '/chaos/:state',
+  //   requiresAuth: true,
+  //   description: 'Enable chaos',
+  //   example: `curl -X PUT localhost:3000/chaos/true -H 'Authorization: Bearer tttttt'`,
+  //   response: { chaos: true },
+  // },
 ];
 
 async function setAuthUser(req, res, next) {
@@ -66,18 +66,18 @@ async function setAuthUser(req, res, next) {
   next();
 }
 
-authRouter.put(
-  '/chaos/:state',
-  authRouter.authenticateToken,
-  asyncHandler(async (req, res) => {
-    if (!req.user.isRole(Role.Admin)) {
-      return res.status(404).send({ message: 'unknown endpoint' });
-    }
+// authRouter.put(
+//   '/chaos/:state',
+//   authRouter.authenticateToken,
+//   asyncHandler(async (req, res) => {
+//     if (!req.user.isRole(Role.Admin)) {
+//       return res.status(404).send({ message: 'unknown endpoint' });
+//     }
 
-    enableChaos = req.params.state === 'true';
-    res.json({ chaos: enableChaos });
-  })
-);
+//     enableChaos = req.params.state === 'true';
+//     res.json({ chaos: enableChaos });
+//   })
+// );
 
 // Authenticate token
 authRouter.authenticateToken = (req, res, next) => {
@@ -115,9 +115,9 @@ authRouter.put(
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     try {
-      if (enableChaos){
-        throw new Error("Chaos enabled!");
-      }
+      // if (enableChaos){
+      //   throw new Error("Chaos enabled!");
+      // }
       const user = await DB.getUser(email, password);
       const auth = await setAuth(user);
       res.json({ user: user, token: auth });
