@@ -7,6 +7,7 @@ const metrics = require('../metrics.js');
 const logging = require('../logger.js');
 
 const authRouter = express.Router();
+var enableChaos;
 
 authRouter.endpoints = [
   {
@@ -62,7 +63,7 @@ authRouter.put(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     if (!req.user.isRole(Role.Admin)) {
-      throw new StatusCodeError('unknown endpoint', 404);
+      return res.status(404).send({ message: 'unknown endpoint' });
     }
 
     enableChaos = req.params.state === 'true';
@@ -106,6 +107,9 @@ authRouter.put(
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     try {
+      if (enableChaos){
+        throw new Error("Chaos enabled!");
+      }
       const user = await DB.getUser(email, password);
       const auth = await setAuth(user);
       res.json({ user: user, token: auth });
