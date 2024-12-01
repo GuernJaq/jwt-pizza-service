@@ -7,7 +7,7 @@ const metrics = require('../metrics.js');
 const logging = require('../logger.js');
 
 const authRouter = express.Router();
-var enableChaos;
+var enableChaos = false;
 
 authRouter.endpoints = [
   {
@@ -39,6 +39,14 @@ authRouter.endpoints = [
     description: 'Logout a user',
     example: `curl -X DELETE localhost:3000/api/auth -H 'Authorization: Bearer tttttt'`,
     response: { message: 'logout successful' },
+  },
+  {
+    method: 'PUT',
+    path: '/chaos/:state',
+    requiresAuth: true,
+    description: 'Enable chaos',
+    example: `curl -X PUT localhost:3000/chaos/true -H 'Authorization: Bearer tttttt'`,
+    response: { chaos: true },
   },
 ];
 
